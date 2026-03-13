@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Jump</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: manipulation; }
+        canvas { display: block; background: #fff; margin: 0 auto; }
+        #msg { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body onclick="jump()">
+    <div id="msg">Tap to Jump! Score: <span id="score">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let score = 0;
+        let player = { x: 50, y: canvas.height - 50, w: 30, h: 30, dy: 0, jumpDist: -12, gravity: 0.6 };
+        let obstacles = [];
+
+        function jump() { if(player.y >= canvas.height - 50) player.dy = player.jumpDist; }
+
+        function update() {
+            player.dy += player.gravity;
+            player.y += player.dy;
+            if(player.y > canvas.height - 50) { player.y = canvas.height - 50; player.dy = 0; }
+
+            if(Math.random() < 0.02) obstacles.push({ x: canvas.width, y: canvas.height - 50, w: 20, h: 50 });
+
+            obstacles.forEach((o, i) => {
+                o.x -= 5;
+                if(o.x + o.w < 0) { obstacles.splice(i, 1); score++; document.getElementById("score").innerHTML = score; }
+                if(player.x < o.x + o.w && player.x + player.w > o.x && player.y < o.y + o.h && player.y + player.h > o.y) {
+                    alert("Game Over! Score: " + score);
+                    score = 0; obstacles = []; document.getElementById("score").innerHTML = score;
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "red"; ctx.fillRect(player.x, player.y, player.w, player.h);
+            ctx.fillStyle = "black"; obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+            requestAnimationFrame(() => { update(); draw(); });
+        }
+        draw();
+    </script>
+</body>
+</html>
